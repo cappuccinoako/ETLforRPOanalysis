@@ -20,6 +20,12 @@ def readInspectionData(wb):
     #HARDCODED
     # ws = wb.active
     all_data = []
+    columns_name = []
+    ws = wb.active
+    cell_range = ws['A9':'A59']
+    for row in cell_range:
+        for cell in row:
+            columns_name.append(cell.value)
     for sheet in wb.worksheets:
         for column_range in range (4, 10):
             data = []
@@ -29,6 +35,5 @@ def readInspectionData(wb):
                 data.append(sheet.cell(column=column_range, row=i).value)
             if data != []:
                 all_data.append(data)
-    return(all_data)
-
-readInspectionData(wb)
+    df = pd.DataFrame(all_data, columns = columns_name) 
+    return(df)
