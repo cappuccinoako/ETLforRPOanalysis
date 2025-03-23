@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import openpyxl
 from openpyxl import load_workbook
+import numpy as np
 
 #TODO: create some func to import xlsx file and some gui idk
 #import wb
@@ -37,3 +38,13 @@ def readInspectionData(wb):
                 all_data.append(data)
     df = pd.DataFrame(all_data, columns = columns_name) 
     return(df)
+
+def dataQuality(loaded_df):
+    """check the data quality"""
+    #check whether loaded_df is empty
+    if loaded_df.empty:
+        print('No Songs Extracted')
+        return False
+    #replace None with NaN
+    loaded_df = loaded_df.fillna(value=np.nan)
+    return loaded_df
