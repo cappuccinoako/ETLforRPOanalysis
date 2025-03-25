@@ -6,7 +6,7 @@ import numpy as np
 
 #TODO: create some func to import xlsx file and some gui idk
 #import wb
-wb = load_workbook(filename='Data\Machanical (Suspension).xlsx')
+wb = load_workbook(filename='/opt/airflow/data/Machanical (Suspension).xlsx')
 
 
 def readCritalParams(wb):
@@ -43,8 +43,16 @@ def dataQuality(loaded_df):
     """check the data quality"""
     #check whether loaded_df is empty
     if loaded_df.empty:
-        print('No Songs Extracted')
+        print('No Data Extracted')
         return False
     #replace None with NaN
     loaded_df = loaded_df.fillna(value=np.nan)
     return loaded_df
+
+def rpo(exelFile=wb):
+    #Importing the songs_df from the Extract.py
+    load_df=readInspectionData(exelFile)
+    dataQuality(load_df)
+    return (load_df)
+
+rpo()
