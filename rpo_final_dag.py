@@ -30,7 +30,7 @@ dag = DAG(
 )
 
 def ETL():
-    from rpo_final_dag import rpo
+    from RPO_etl import rpo
     df=rpo()
     #print(df)
     conn = BaseHook.get_connection('postgres_sql')
