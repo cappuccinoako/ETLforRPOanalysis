@@ -1,54 +1,33 @@
 import os
 import pandas as pd
-import openpyxl
-from openpyxl import load_workbook
 import numpy as np
 
 #TODO: create some func to import xlsx file and some gui idk
-#import wb
-# wb = load_workbook(filename='/opt/airflow/data/Machanical (Suspension).xlsx')
+
+
+# def readCritalParams(wb):
+#     """read Mechanical Critical Parameters from Mechanical excel file"""
+#     #HARDCODED
+#     cells = ['A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7']
+#     values = [wb.active[cell].value for cell in cells]
+#     return(values)
 
 def readWB(path):
     """read workbook"""
-    df = pd.read_excel(path, usecols="A,D,E,F,G,H,I", skiprows=8, nrows=50)
-    df = df.transpose()
-    new_header = df.iloc[0]
-    df = df[1:]
-    df.columns = new_header
-    return df
+    combined_df = pd.DataFrame()
+    dfs = pd.read_excel(path, sheet_name=None)
+    for key, value in dfs.items():
+        skipped_value = value.iloc[7:58]
+        skipped_value = skipped_value.transpose()
+        new_header = skipped_value.iloc[0]
+        skipped_value = skipped_value[1:]
+        skipped_value.columns = new_header
+        skipped_value = skipped_value.iloc[2:]
+        combined_df = pd.concat([combined_df, skipped_value])
+        combined_df = combined_df.dropna(how='all')
+    return combined_df
 
-
-
-def readCritalParams(wb):
-    """read Mechanical Critical Parameters from Mechanical excel file"""
-    #HARDCODED
-    cells = ['A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7']
-    values = [wb.active[cell].value for cell in cells]
-    return(values)
-
-# def readInspectionData(wb):
-#     """read Inspection Data from Mechanical excel file"""
-    #HARDCODED
-    # ws = wb.active
-
-    # all_data = []
-    # columns_name = []
-    # ws = wb.active
-    # cell_range = ws['A9':'A59']
-    # for row in cell_range:
-    #     for cell in row:
-    #         columns_name.append(cell.value)
-    # for sheet in wb.worksheets:
-    #     for column_range in range (4, 10):
-    #         data = []
-    #         for i in range(9, 60):
-    #             if sheet.cell(column=column_range, row=9).value is None:
-    #                 break
-    #             data.append(sheet.cell(column=column_range, row=i).value)
-    #         if data != []:
-    #             all_data.append(data)
-    # df = pd.DataFrame(all_data, columns = columns_name) 
-    # return(df)
+# readWB(path='Data\Machanical (Suspension).xlsx')
 
 
 
@@ -60,9 +39,9 @@ def dataQuality(loaded_df):
         return False
     return loaded_df
 
-def rpo(exelFile):
+def rpo(exelFile='Data\Machanical (Suspension).xlsx'):
     #Importing the songs_df from the Extract.py
-    load_df=readInspectionData(exelFile)
+    load_df=readWB(exelFile)
     dataQuality(load_df)
     return (load_df)
 
