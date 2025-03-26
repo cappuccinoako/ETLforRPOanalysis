@@ -5,12 +5,33 @@ import numpy as np
 #TODO: create some func to import xlsx file and some gui idk
 
 
-# def readCritalParams(wb):
-#     """read Mechanical Critical Parameters from Mechanical excel file"""
-#     #HARDCODED
-#     cells = ['A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7']
-#     values = [wb.active[cell].value for cell in cells]
-#     return(values)
+def readCritalParams(path):
+    """idk"""
+    # Read all required columns
+    df = pd.read_excel(
+        path, 
+        usecols=[0, 5, 3, 7],
+        skiprows=1,
+        nrows=6, 
+        header=None
+    )
+    
+    # Combine parameters
+    parameters = pd.concat([df[0], df[5]], ignore_index=True)
+    values = pd.concat([df[3], df[7]], ignore_index=True).fillna(0)
+    
+    # Create DataFrame
+    mechanicalCritalParamsdf = pd.DataFrame({
+        'Parameter': parameters,
+        'Value': values
+    })
+    mechanicalCritalParamsdf = mechanicalCritalParamsdf.transpose()
+    new_header = mechanicalCritalParamsdf.iloc[0]
+    mechanicalCritalParamsdf = mechanicalCritalParamsdf[1:]
+    mechanicalCritalParamsdf.columns = new_header
+    mechanicalCritalParamsdf = mechanicalCritalParamsdf.reset_index(drop=True)
+    mechanicalCritalParamsdf = mechanicalCritalParamsdf.rename_axis(None, axis=1)
+    return mechanicalCritalParamsdf
 
 def loadWB(path):
     """load and cleann data from excel file"""
@@ -35,6 +56,14 @@ def loadWB(path):
     combined_df = combined_df.rename(columns={'Critical Parameter Numbers à':'Critical Parameter Numbers'})
     return combined_df
 
+def descDimension(loaded_df):
+    dfDescription = loaded_df.iloc[:, [1]]
+    return dfDescription
+
+def statsDimension(loaded_df):
+    dfStats = loaded_df.iloc[:, 2:19]
+    return dfStats
+
 def getSample(loaded_df):
     dfSample = loaded_df.iloc[:, [0] + list(range(19, 51))]
     melted_df = dfSample.melt(
@@ -45,7 +74,11 @@ def getSample(loaded_df):
     melted_df_cleaned = melted_df.dropna(subset=['Sample Value'])
     return melted_df_cleaned
 
-# loaded_df = loadWB(path='Data\Machanical (Suspension).xlsx')
+
+
+loaded_df = loadWB(path='Data\dummy.xlsx')
+print(readCritalParams(path='Data\dummy.xlsx'))
+
 # print(getSample(loaded_df))
 
 
