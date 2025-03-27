@@ -128,10 +128,20 @@ def factSam(loaded_df, criticalParams):
 #     loaded_df = loaded_df.fillna(value=np.nan)
 #     return loaded_df
 
-# def rpo(exelFile=wb):
-#     #Importing the songs_df from the Extract.py
-#     load_df=readInspectionData(exelFile)
-#     dataQuality(load_df)
-#     return (load_df)
+def rpo(exelFile):
+    #Importing the songs_df from the Extract.py
+    load_df= readInspectionData(exelFile)
+    critical = readCritalParams(exelFile)
+    
+    supplier = supplierDimension(critical)
+    part = partDimension(critical)
+    inspect = inspectionDimension(critical)
+
+    desc = descDimension(load_df)
+    stats = statsDimension(load_df)
+
+    fact = factSam(load_df, critical)
+
+    return supplier, part, inspect, desc, stats, fact
 
 # rpo()
