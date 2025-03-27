@@ -39,7 +39,7 @@ def ETL():
     inspect.to_sql('inspection_dimension', engine, if_exists='append', index=False)
     desc.to_sql('descriptions_dimension', engine, if_exists='append', index=False)
     stats.to_sql('statistic_dimension', engine, if_exists='append', index=False)
-    fact.to_sql('fact_temp', engine, if_exists='append', index=False)
+    fact.to_sql('fact_temp', engine, if_exists='replace', index=False)
 
 with dag:
     create_table= SQLExecuteQueryOperator(
@@ -52,5 +52,10 @@ with dag:
         python_callable=ETL,
         dag=dag,
     )
+    add_to_fact= SQLExecuteQueryOperator(
+        task_id='add_to_fact',
+        conn_id=_CONN_ID,
+        sql="rpo_add_to_fact.sql"
+    )
 
-    create_table >> run_etl
+    create_table >> run_etl >> add_to_fact
