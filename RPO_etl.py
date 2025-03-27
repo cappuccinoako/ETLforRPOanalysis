@@ -34,18 +34,18 @@ def loadCriticalParams(path):
     mechanicalCritalParamsdf = mechanicalCritalParamsdf.reset_index(drop=True)
     mechanicalCritalParamsdf = mechanicalCritalParamsdf.rename_axis(None, axis=1)
     conv_dict = {
-        'Supplier Code and Name': 'supplierCodeandName',
-        'Supplier Factory Location':'supplierFactoryLocation',
-        'WD Part Number': 'WDPartNumber',
-        'Commodity Code and Name': 'commodityCodeandName',
-        'Supplier Part Number and Revision': 'supplierPartNumberandRevision',
-        'WD SQE (Development/Sustaining)': 'WDSQE',
-        'QA Supervisor': 'QASupervisor',
-        'QA Inspector(s)': 'QAInspector',
-        'Date Inspected': 'dateInspected',
-        'Submit Date': 'submitDate',
-        'WD Program Name': 'WDProgramName',
-        'Build Phase': 'buildPhase'
+        'Supplier Code and Name': 'supplier_codeand_name',
+        'Supplier Factory Location':'supplier_factory_location',
+        'WD Part Number': 'wd_part_number',
+        'Commodity Code and Name': 'commodity_codeand_name',
+        'Supplier Part Number and Revision': 'supplier_part_numberand_revision',
+        'WD SQE (Development/Sustaining)': 'wdsqe',
+        'QA Supervisor': 'qa_supervisor',
+        'QA Inspector(s)': 'qa_inspector',
+        'Date Inspected': 'date_inspected',
+        'Submit Date': 'submit_date',
+        'WD Program Name': 'wd_program_name',
+        'Build Phase': 'build_phase'
     }
     # convert the columns into a new datframe
     critialRenamed = mechanicalCritalParamsdf.rename(columns=conv_dict)
@@ -75,25 +75,25 @@ def loadWB(path):
     combined_df = combined_df.rename_axis(None, axis=1)
     combined_df = combined_df.rename(columns={'Critical Parameter Numbers à':'Critical Parameter Numbers'})
     conv_dict = {
-        'Critical Parameter Numbers': 'criticalParameterNumbers',
+        'Critical Parameter Numbers': 'critical_parameter_numbers',
         'Description': 'descriptions',
-        'CP Type': 'CPType',
+        'CP Type': 'cp_type',
         'Nominal': 'nominal',
         'Tolerance': 'tolerance',
-        'USL': 'USL',
-        'LSL': 'LSL',
-        'MC Upper Limit': 'MCUpperLimit',
-        'MC Lower Limit': 'MCLowerLimit',
-        'Mean': 'mean',
-        'MC % Error': 'MCPercentError',
-        'Stdev': 'Stdev',
-        'UCL of HVM Cpk Estimate': 'UCLofHVMCpkEstimate',
-        'HVM Cpk Point Estimate': 'HVMCpkPointEstimate',
-        'LCL of HVM Cpk Estimate': 'LCLofHVMCpkEstimate',
-        'Min': 'minStats',
-        'Max': 'maxStats',
-        'Range': 'rangeStats',
-        'Count': 'countStats'
+        'USL': 'usl',
+        'LSL': 'lsl',
+        'MC Upper Limit': 'mc_upper_limit',
+        'MC Lower Limit': 'mc_lower_limit',
+        'Mean': 'mean_stats',
+        'MC % Error': 'mc_percent_error_real',
+        'Stdev': 'stdev',
+        'UCL of HVM Cpk Estimate': 'uc_lof_hvm_cpk_estimate',
+        'HVM Cpk Point Estimate': 'hvm_cpk_point_estimate',
+        'LCL of HVM Cpk Estimate': 'lc_lof_hvm_cpk_estimate',
+        'Min': 'min_stats',
+        'Max': 'max_stats',
+        'Range': 'range_stats',
+        'Count': 'count_stats'
         }
     # convert the columns into a new datframe
     combined_df = combined_df.rename(columns=conv_dict)
@@ -128,7 +128,9 @@ def factSam(loaded_df, criticalParams):
     )
     melted_df_cleaned = melted_df.dropna(subset=['Sample Value'])
     melted_df_cleaned = melted_df_cleaned.drop(columns='variable')
-    return criticalParams.merge(melted_df_cleaned, how='cross').dtypes
+    factSample = criticalParams.merge(melted_df_cleaned, how='cross')
+    factSample = factSample.rename(columns={'Sample Value':'sample_value'})
+    return factSample
 
 
 

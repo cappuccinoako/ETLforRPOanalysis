@@ -34,11 +34,12 @@ def ETL():
     supplier, part, inspect, desc, stats, fact = rpo(exelFile='/opt/airflow/data/dummy.xlsx')
     conn = BaseHook.get_connection('postgres_sql')
     engine = create_engine(f'postgresql://{conn.login}:{conn.password}@{conn.host}:{conn.port}/{conn.schema}')
-    supplier.to_sql('suppliersDim', engine, if_exists='append')
-    part.to_sql('partsDim', engine, if_exists='append')
-    inspect.to_sql('inspectionDim', engine, if_exists='append')
-    desc.to_sql('descriptionsDim', engine, if_exists='append')
-    stats.to_sql('statisticDim', engine, if_exists='append')
+    supplier.to_sql('suppliers_dimension', engine, if_exists='append', index=False)
+    part.to_sql('parts_dimension', engine, if_exists='append', index=False)
+    inspect.to_sql('inspection_dimension', engine, if_exists='append', index=False)
+    desc.to_sql('descriptions_dimension', engine, if_exists='append', index=False)
+    stats.to_sql('statistic_dimension', engine, if_exists='append', index=False)
+    fact.to_sql('fact_temp', engine, if_exists='append', index=False)
 
 with dag:
     create_table= SQLExecuteQueryOperator(
