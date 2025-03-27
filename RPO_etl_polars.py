@@ -78,8 +78,45 @@ def readInspectionData(wb):
     df = df.rename(conv_dict)
     return df
 
-print(readInspectionData(wb))
-# print(readCritalParams(wb))
+def supplierDimension(loadedCritical):
+    dfSuppliers = loadedCritical[:, 0:2]
+    return dfSuppliers
+
+def partDimension(loadedCritical):
+    dfParts = loadedCritical[:, 8:]
+    return dfParts
+
+def inspectionDimension(loadedCritical):
+    dfInspect = loadedCritical[:, 2:8]
+    return dfInspect
+
+def descDimension(loaded_df):
+    dfDescription = loaded_df[:, 0:2]
+    return dfDescription
+
+def statsDimension(loaded_df):
+    dfStats = loaded_df[:, 2:19]
+    return dfStats
+
+def factSam(loaded_df, criticalParams):
+    sampleColumns=[f'Sample #{i}' for i in range(1, 33)]
+    melted_df = loaded_df.melt(
+        id_vars=[col for col in loaded_df.columns if col not in sampleColumns],  # Column to keep as identifier
+        value_vars=sampleColumns,  # Columns to collapse
+        value_name='Sample Value'  # Name of the column containing the values
+    )
+    melted_df_cleaned = melted_df.drop_nans(subset=['Sample Value'])
+    melted_df_cleaned = melted_df_cleaned.drop(['variable'])
+    factSample = criticalParams.join(melted_df_cleaned, how='cross', coalesce=True)
+    factSample = factSample.rename({'Sample Value':'sample_value'})
+    return factSample
+
+
+# inspect = readInspectionData(wb)
+# critical = readCritalParams(wb)
+# print(factSam(inspect, critical))
+# print(statsDimension(inspect))
+# print(inspectionDimension(critical))
 
 # def dataQuality(loaded_df):
 #     """check the data quality"""
