@@ -33,7 +33,24 @@ def loadCriticalParams(path):
     #remove that annoying index
     mechanicalCritalParamsdf = mechanicalCritalParamsdf.reset_index(drop=True)
     mechanicalCritalParamsdf = mechanicalCritalParamsdf.rename_axis(None, axis=1)
-    return mechanicalCritalParamsdf
+    conv_dict = {
+        'Supplier Code and Name': 'supplierCodeandName',
+        'Supplier Factory Location':'supplierFactoryLocation',
+        'WD Part Number': 'WDPartNumber',
+        'Commodity Code and Name': 'commodityCodeandName',
+        'Supplier Part Number and Revision': 'supplierPartNumberandRevision',
+        'WD SQE (Development/Sustaining)': 'WDSQE',
+        'QA Supervisor': 'QASupervisor',
+        'QA Inspector(s)': 'QAInspector',
+        'Date Inspected': 'dateInspected',
+        'Submit Date': 'submitDate',
+        'WD Program Name': 'WDProgramName',
+        'Build Phase': 'buildPhase'
+    }
+    # convert the columns into a new datframe
+    critialRenamed = mechanicalCritalParamsdf.rename(columns=conv_dict)
+    
+    return critialRenamed
 
 def loadWB(path):
     """load and cleann data from excel file"""
@@ -57,6 +74,29 @@ def loadWB(path):
     combined_df = combined_df.reset_index(drop=True)
     combined_df = combined_df.rename_axis(None, axis=1)
     combined_df = combined_df.rename(columns={'Critical Parameter Numbers à':'Critical Parameter Numbers'})
+    conv_dict = {
+        'Critical Parameter Numbers': 'criticalParameterNumbers',
+        'Description': 'descriptions',
+        'CP Type': 'CPType',
+        'Nominal': 'nominal',
+        'Tolerance': 'tolerance',
+        'USL': 'USL',
+        'LSL': 'LSL',
+        'MC Upper Limit': 'MCUpperLimit',
+        'MC Lower Limit': 'MCLowerLimit',
+        'Mean': 'mean',
+        'MC % Error': 'MCPercentError',
+        'Stdev': 'Stdev',
+        'UCL of HVM Cpk Estimate': 'UCLofHVMCpkEstimate',
+        'HVM Cpk Point Estimate': 'HVMCpkPointEstimate',
+        'LCL of HVM Cpk Estimate': 'LCLofHVMCpkEstimate',
+        'Min': 'minStats',
+        'Max': 'maxStats',
+        'Range': 'rangeStats',
+        'Count': 'countStats'
+        }
+    # convert the columns into a new datframe
+    combined_df = combined_df.rename(columns=conv_dict)
     return combined_df
 
 def supplierDimension(loadedCritical):
@@ -88,13 +128,14 @@ def factSam(loaded_df, criticalParams):
     )
     melted_df_cleaned = melted_df.dropna(subset=['Sample Value'])
     melted_df_cleaned = melted_df_cleaned.drop(columns='variable')
-    return criticalParams.merge(melted_df_cleaned, how='cross')
+    return criticalParams.merge(melted_df_cleaned, how='cross').dtypes
 
 
 
 
-# loaded_df = loadWB(path='Data\dummy.xlsx')
-# critial = loadCriticalParams(path='Data\dummy.xlsx')
+loaded_df = loadWB(path='Data\dummy.xlsx')
+critial = loadCriticalParams(path='Data\dummy.xlsx')
+# print(statsDimension(loaded_df))
 # print(factSam(loaded_df, critial))
 # print(inspectionDimension(loadCriticalParams(path='Data\dummy.xlsx')))
 
