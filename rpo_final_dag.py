@@ -19,14 +19,14 @@ default_args = {
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
-    'retry_delay': dt.timedelta(minutes=1)
+    'retry_delay': dt.timedelta(minutes=1),
 }
 
 dag = DAG(
     'RPO_final_dag',
     default_args=default_args,
     description='RPO process',
-    schedule_interval=dt.timedelta(minutes=50),
+    schedule_interval='@once',
 )
 
 def ETL():

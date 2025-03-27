@@ -136,7 +136,7 @@ def factSam(loaded_df, criticalParams):
 loaded_df = loadWB(path='Data\dummy.xlsx')
 critial = loadCriticalParams(path='Data\dummy.xlsx')
 # print(statsDimension(loaded_df))
-# print(factSam(loaded_df, critial))
+print(factSam(loaded_df, critial))
 # print(inspectionDimension(loadCriticalParams(path='Data\dummy.xlsx')))
 
 
