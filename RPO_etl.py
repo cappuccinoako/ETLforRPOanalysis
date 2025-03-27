@@ -53,7 +53,7 @@ def loadCriticalParams(path):
     return critialRenamed
 
 def loadWB(path):
-    """load and cleann data from excel file"""
+    """load and clean data from excel file"""
     combined_df = pd.DataFrame()
     dfs = pd.read_excel(path, sheet_name=None)
     for key, value in dfs.items():
@@ -135,10 +135,10 @@ def factSam(loaded_df, criticalParams):
 
 
 
-loaded_df = loadWB(path='Data\dummy.xlsx')
-critial = loadCriticalParams(path='Data\dummy.xlsx')
+# loaded_df = loadWB(path='Data\dummy.xlsx')
+# critial = loadCriticalParams(path='Data\dummy.xlsx')
 # print(statsDimension(loaded_df))
-print(factSam(loaded_df, critial))
+# print(factSam(loaded_df, critial))
 # print(inspectionDimension(loadCriticalParams(path='Data\dummy.xlsx')))
 
 
