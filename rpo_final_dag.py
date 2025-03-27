@@ -31,73 +31,20 @@ dag = DAG(
 
 def ETL():
     from RPO_etl import rpo
-    df=rpo()
-    #print(df)
+    supplier, part, inspect, desc, stats, fact = rpo(exelFile='/opt/airflow/data/dummy.xlsx')
     conn = BaseHook.get_connection('postgres_sql')
     engine = create_engine(f'postgresql://{conn.login}:{conn.password}@{conn.host}:{conn.port}/{conn.schema}')
-    df.to_sql('rpo_data', engine, if_exists='replace')
+    supplier.to_sql('suppliersDim', engine, if_exists='append')
+    part.to_sql('partsDim', engine, if_exists='append')
+    inspect.to_sql('inspectionDim', engine, if_exists='append')
+    desc.to_sql('descriptionsDim', engine, if_exists='append')
+    stats.to_sql('statisticDim', engine, if_exists='append')
 
 with dag:
     create_table= SQLExecuteQueryOperator(
         task_id='create_table',
         conn_id=_CONN_ID,
-        sql="""
-            CREATE TABLE IF NOT EXISTS rpo_data(
-            Critical_Parameter_Numbers VARCHAR(200),
-            Description VARCHAR(200),
-            CP_Type VARCHAR(200),
-            Nominal decimal(200),
-            Tolerance decimal(200),
-            USL decimal(200),
-            LSL decimal(200),
-            MC_Upper_Limit decimal(200),
-            MC_Lower_Limit decimal(200),
-            Mean decimal(200),
-            MC_percent_Error decimal(200),
-            Stdev decimal(200),
-            UCL_of_HVM_Cpk_Estimate decimal(200),
-            HVM_Cpk_Point_Estimate decimal(200),
-            LCL_of_HVM_Cpk_Estimate decimal(200),
-            Min decimal(200),
-            Max decimal(200),
-            Range decimal(200),
-            Count decimal(200),
-            Sample_1 decimal(200),
-            Sample_2 decimal(200),
-            Sample_3 decimal(200),
-            Sample_4 decimal(200),
-            Sample_5 decimal(200),
-            Sample_6 decimal(200),
-            Sample_7 decimal(200),
-            Sample_8 decimal(200),
-            Sample_9 decimal(200),
-            Sample_10 decimal(200),
-            Sample_11 decimal(200),
-            Sample_12 decimal(200),
-            Sample_13 decimal(200),
-            Sample_14 decimal(200),
-            Sample_15 decimal(200),
-            Sample_16 decimal(200),
-            Sample_17 decimal(200),
-            Sample_18 decimal(200),
-            Sample_19 decimal(200),
-            Sample_20 decimal(200),
-            Sample_21 decimal(200),
-            Sample_22 decimal(200),
-            Sample_23 decimal(200),
-            Sample_24 decimal(200),
-            Sample_25 decimal(200),
-            Sample_26 decimal(200),
-            Sample_27 decimal(200),
-            Sample_28 decimal(200),
-            Sample_29 decimal(200),
-            Sample_30 decimal(200),
-            Sample_31 decimal(200),
-            Sample_32 decimal(200),
-            CONSTRAINT primary_key_constraint PRIMARY KEY (Critical_Parameter_Numbers)
-        )
-        """,
-        params={"schema": _SCHEMA, "table": _TABLE}
+        sql="rpoquery.sql"
     )
     run_etl = PythonOperator(
         task_id='run_etl',

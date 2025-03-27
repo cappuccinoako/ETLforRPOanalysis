@@ -87,6 +87,7 @@ def factSam(loaded_df, criticalParams):
         value_name='Sample Value'  # Name of the column containing the values
     )
     melted_df_cleaned = melted_df.dropna(subset=['Sample Value'])
+    melted_df_cleaned = melted_df_cleaned.drop(columns='variable')
     return criticalParams.merge(melted_df_cleaned, how='cross')
 
 
@@ -97,21 +98,30 @@ def factSam(loaded_df, criticalParams):
 # print(factSam(loaded_df, critial))
 # print(inspectionDimension(loadCriticalParams(path='Data\dummy.xlsx')))
 
-# print(getSample(loaded_df))
 
 
-def dataQuality(loaded_df):
-    """check the data quality"""
-    #check whether loaded_df is empty
-    if loaded_df.empty:
-        print('No Data Extracted')
-        return False
-    return loaded_df
+# def dataQuality(loaded_df):
+#     """check the data quality"""
+#     #check whether loaded_df is empty
+#     if loaded_df.empty:
+#         print('No Data Extracted')
+#         return False
+#     return loaded_df
 
-def rpo(exelFile='Data\Machanical (Suspension).xlsx'):
+def rpo(exelFile):
     #Importing the songs_df from the Extract.py
-    load_df=readWB(exelFile)
-    dataQuality(load_df)
-    return (load_df)
+    load_df= loadWB(exelFile)
+    critical = loadCriticalParams(exelFile)
+    
+    supplier = supplierDimension(critical)
+    part = partDimension(critical)
+    inspect = inspectionDimension(critical)
+
+    desc = descDimension(load_df)
+    stats = statsDimension(load_df)
+
+    fact = factSam(load_df, critical)
+
+    return supplier, part, inspect, desc, stats, fact
 
 # rpo()
