@@ -1,7 +1,9 @@
 import os
 import pandas as pd
-import numpy as np
+import time
 
+
+# start_time = time.time()
 #TODO: create some func to import xlsx file and some gui idk
 
 
@@ -167,4 +169,6 @@ def rpo(exelFile):
 
     return supplier, part, inspect, desc, stats, fact
 
-# rpo()
+# print(rpo(exelFile='Data\dummy.xlsx'))
+# pandas_time = time.time() - start_time
+# print(pandas_time)

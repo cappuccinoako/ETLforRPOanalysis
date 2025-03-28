@@ -1,22 +1,29 @@
 import os
-import numpy as np
 import polars as pl
 import openpyxl
 from openpyxl import load_workbook
+# import time
 
+
+# start_time = time.time()
 #TODO: create some func to import xlsx file and some gui idk
-#import wb
-wb = load_workbook(filename='Data\dummy.xlsx')
 
 
-def readCritalParams(wb):
+def readCritalParams(excelfile):
     """read Mechanical Critical Parameters from Mechanical excel file"""
     #HARDCODED
-    params_cells = ['A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7']
-    params_values = [wb.active[cell].value for cell in params_cells]
-    value_cells = ['D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7']
-    values = [[wb.active[cell].value for cell in value_cells]]
-    df = pl.DataFrame(values, schema=params_values, orient="row")
+    df = pl.read_excel(excelfile)
+    critical_df = df[:6]
+    critical_df_params_1 = critical_df.select(pl.nth([0])).rename({"Machanical Critical Parameters":"a"})
+    critical_df_params_2 = critical_df.select(pl.nth([3])).rename({"__UNNAMED__5":"a"})
+    critical_df_params = critical_df_params_1.vstack(critical_df_params_2)
+    critical_df_params = critical_df_params.transpose()
+    critical_df_value_1 = critical_df.select(pl.nth([1])).rename({"__UNNAMED__3":"b"})
+    critical_df_value_2 = critical_df.select(pl.nth([5])).rename({"__UNNAMED__7":"b"})
+    critical_df_value = pl.concat([critical_df_value_1, critical_df_value_2], how="vertical")
+    critical_df_value = critical_df_value.transpose()
+    critical = pl.concat([critical_df_params, critical_df_value], how="vertical")
+    critical = critical.rename(critical.head(1).to_dicts().pop()).slice(1)
     conv_dict = {
         'Supplier Code and Name': 'supplier_codeand_name',
         'Supplier Factory Location':'supplier_factory_location',
@@ -31,29 +38,15 @@ def readCritalParams(wb):
         'WD Program Name': 'wd_program_name',
         'Build Phase': 'build_phase'
     }
-    df = df.rename(conv_dict)
-    return df
+    critical = critical.rename(conv_dict)
+    return critical
 
-def readInspectionData(wb):
+def readInspectionData(excelfile):
     """read Inspection Data from Mechanical excel file"""
-    #HARDCODED
-    all_data = []
-    columns_name = []
-    ws = wb.active
-    cell_range = ws['A9':'A59']
-    for row in cell_range:
-        for cell in row:
-            columns_name.append(cell.value)
-    for sheet in wb.worksheets:
-        for column_range in range (4, 10):
-            data = []
-            for i in range(9, 60):
-                if sheet.cell(column=column_range, row=9).value is None:
-                    break
-                data.append(sheet.cell(column=column_range, row=i).value)
-            if data != []:
-                all_data.append(data)
-    df = pl.DataFrame(all_data, schema=columns_name)
+    df = pl.read_excel(excelfile)
+    mechanical_df = df[7:58]
+    mechanical_df = mechanical_df.transpose()
+    mechanical_df = mechanical_df.rename(mechanical_df.head(1).to_dicts().pop()).slice(1)
     conv_dict = {
         'Critical Parameter Numbers à': 'critical_parameter_numbers',
         'Description': 'descriptions',
@@ -75,8 +68,23 @@ def readInspectionData(wb):
         'Range': 'range_stats',
         'Count': 'count_stats'
         }
-    df = df.rename(conv_dict)
-    return df
+    mechanical_df = mechanical_df.rename(conv_dict)
+    mechanical_df = mechanical_df.with_columns(
+    pl.col('nominal').cast(pl.Float64),
+    pl.col('tolerance').cast(pl.Float64),
+    pl.col('usl').cast(pl.Float64),
+    pl.col('lsl').cast(pl.Float64),
+    pl.col('mean_stats').cast(pl.Float64),
+    pl.col('stdev').cast(pl.Float64),
+    pl.col('uc_lof_hvm_cpk_estimate').cast(pl.Float64),
+    pl.col('hvm_cpk_point_estimate').cast(pl.Float64),
+    pl.col('lc_lof_hvm_cpk_estimate').cast(pl.Float64),
+    pl.col('min_stats').cast(pl.Float64),
+    pl.col('max_stats').cast(pl.Float64),
+    pl.col('range_stats').cast(pl.Float64),
+    pl.col('count_stats').cast(pl.Float64)
+)
+    return mechanical_df
 
 def supplierDimension(loadedCritical):
     dfSuppliers = loadedCritical[:, 0:2]
@@ -105,18 +113,23 @@ def factSam(loaded_df, criticalParams):
         value_vars=sampleColumns,  # Columns to collapse
         value_name='Sample Value'  # Name of the column containing the values
     )
-    melted_df_cleaned = melted_df.drop_nans(subset=['Sample Value'])
-    melted_df_cleaned = melted_df_cleaned.drop(['variable'])
-    factSample = criticalParams.join(melted_df_cleaned, how='cross', coalesce=True)
+    # melted_df_cleaned = melted_df.drop_nans(subset=['Sample Value'])
+    melted_df = melted_df.drop(['variable'])
+    factSample = criticalParams.join(melted_df, how='cross', coalesce=True)
     factSample = factSample.rename({'Sample Value':'sample_value'})
+    factSample = factSample.with_columns(
+    pl.col('sample_value').cast(pl.Float64)
+)
+    factSample = factSample.drop_nans(subset=['sample_value'])
     return factSample
 
 
-# inspect = readInspectionData(wb)
-# critical = readCritalParams(wb)
+# inspect = readInspectionData(excelfile='Data\dummy.xlsx')
+# print(inspect)
+# critical = readCritalParams(excelfile='Data\dummy.xlsx')
+# print(critical)
 # print(factSam(inspect, critical))
-# print(statsDimension(inspect))
-# print(inspectionDimension(critical))
+# print(partDimension(inspect))
 
 # def dataQuality(loaded_df):
 #     """check the data quality"""
@@ -144,4 +157,7 @@ def rpo(exelFile):
 
     return supplier, part, inspect, desc, stats, fact
 
-# rpo()
+# print(rpo(exelFile='Data\dummy.xlsx'))
+# polars_time = time.time() - start_time
+# print(polars_time)
+
