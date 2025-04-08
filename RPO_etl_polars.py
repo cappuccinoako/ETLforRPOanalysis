@@ -1,7 +1,5 @@
 import os
 import polars as pl
-import openpyxl
-from openpyxl import load_workbook
 # import time
 
 
@@ -43,48 +41,55 @@ def readCritalParams(excelfile):
 
 def readInspectionData(excelfile):
     """read Inspection Data from Mechanical excel file"""
-    df = pl.read_excel(excelfile)
-    mechanical_df = df[7:58]
-    mechanical_df = mechanical_df.transpose()
-    mechanical_df = mechanical_df.rename(mechanical_df.head(1).to_dicts().pop()).slice(1)
-    conv_dict = {
-        'Critical Parameter Numbers à': 'critical_parameter_numbers',
-        'Description': 'descriptions',
-        'CP Type': 'cp_type',
-        'Nominal': 'nominal',
-        'Tolerance': 'tolerance',
-        'USL': 'usl',
-        'LSL': 'lsl',
-        'MC Upper Limit': 'mc_upper_limit',
-        'MC Lower Limit': 'mc_lower_limit',
-        'Mean': 'mean_stats',
-        'MC % Error': 'mc_percent_error',
-        'Stdev': 'stdev',
-        'UCL of HVM Cpk Estimate': 'uc_lof_hvm_cpk_estimate',
-        'HVM Cpk Point Estimate': 'hvm_cpk_point_estimate',
-        'LCL of HVM Cpk Estimate': 'lc_lof_hvm_cpk_estimate',
-        'Min': 'min_stats',
-        'Max': 'max_stats',
-        'Range': 'range_stats',
-        'Count': 'count_stats'
-        }
-    mechanical_df = mechanical_df.rename(conv_dict)
-    mechanical_df = mechanical_df.with_columns(
-    pl.col('nominal').cast(pl.Float64),
-    pl.col('tolerance').cast(pl.Float64),
-    pl.col('usl').cast(pl.Float64),
-    pl.col('lsl').cast(pl.Float64),
-    pl.col('mean_stats').cast(pl.Float64),
-    pl.col('stdev').cast(pl.Float64),
-    pl.col('uc_lof_hvm_cpk_estimate').cast(pl.Float64),
-    pl.col('hvm_cpk_point_estimate').cast(pl.Float64),
-    pl.col('lc_lof_hvm_cpk_estimate').cast(pl.Float64),
-    pl.col('min_stats').cast(pl.Float64),
-    pl.col('max_stats').cast(pl.Float64),
-    pl.col('range_stats').cast(pl.Float64),
-    pl.col('count_stats').cast(pl.Float64)
-)
-    return mechanical_df
+    combined_df = pl.DataFrame()
+    sheets = pl.read_excel(excelfile, sheet_id=0)
+    for value in sheets.items():
+        mechanical_df = value[1]
+        mechanical_df = mechanical_df[7:58]
+        mechanical_df = mechanical_df.transpose()
+        mechanical_df = mechanical_df.rename(mechanical_df.head(1).to_dicts().pop()).slice(1)
+        conv_dict = {
+            'Critical Parameter Numbers à': 'critical_parameter_numbers',
+            'Description': 'descriptions',
+            'CP Type': 'cp_type',
+            'Nominal': 'nominal',
+            'Tolerance': 'tolerance',
+            'USL': 'usl',
+            'LSL': 'lsl',
+            'MC Upper Limit': 'mc_upper_limit',
+            'MC Lower Limit': 'mc_lower_limit',
+            'Mean': 'mean_stats',
+            'MC % Error': 'mc_percent_error',
+            'Stdev': 'stdev',
+            'UCL of HVM Cpk Estimate': 'uc_lof_hvm_cpk_estimate',
+            'HVM Cpk Point Estimate': 'hvm_cpk_point_estimate',
+            'LCL of HVM Cpk Estimate': 'lc_lof_hvm_cpk_estimate',
+            'Min': 'min_stats',
+            'Max': 'max_stats',
+            'Range': 'range_stats',
+            'Count': 'count_stats'
+            }
+        mechanical_df = mechanical_df.rename(conv_dict)
+        mechanical_df = mechanical_df.with_columns(
+        pl.col('nominal').replace("NA", None).cast(pl.Float64),
+        pl.col('tolerance').replace("NA", None).cast(pl.Float64),
+        pl.col('usl').replace("NA", None).cast(pl.Float64),
+        pl.col('lsl').replace("NA", None).cast(pl.Float64),
+        pl.col("mc_upper_limit").replace("NA", None).cast(pl.Float64),
+        pl.col("mc_lower_limit").replace("NA", None).cast(pl.Float64),
+        pl.col('mean_stats').replace("NA", None).cast(pl.Float64),
+        pl.col("mc_percent_error").replace("NA", None).replace("NA", None).cast(pl.Float64),
+        pl.col('stdev').replace("NA", None).cast(pl.Float64),
+        pl.col('uc_lof_hvm_cpk_estimate').replace("NA", None).cast(pl.Float64),
+        pl.col('hvm_cpk_point_estimate').replace("NA", None).cast(pl.Float64),
+        pl.col('lc_lof_hvm_cpk_estimate').replace("NA", None).cast(pl.Float64),
+        pl.col('min_stats').replace("NA", None).cast(pl.Float64),
+        pl.col('max_stats').replace("NA", None).cast(pl.Float64),
+        pl.col('range_stats').replace("NA", None).cast(pl.Float64),
+        pl.col('count_stats').replace("NA", None).cast(pl.Int64)
+    )
+        combined_df = pl.concat([combined_df, mechanical_df])
+    return combined_df
 
 def supplierDimension(loadedCritical):
     dfSuppliers = loadedCritical[:, 0:2]
@@ -157,7 +162,7 @@ def rpo(exelFile):
 
     return supplier, part, inspect, desc, stats, fact
 
-# print(rpo(exelFile='Data\dummy.xlsx'))
+# rpo(exelFile='Data\dummy.xlsx')
 # polars_time = time.time() - start_time
 # print(polars_time)
 

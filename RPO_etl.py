@@ -1,12 +1,13 @@
 import os
 import pandas as pd
-import time
+# import time
 
 
 # start_time = time.time()
+
+
+
 #TODO: create some func to import xlsx file and some gui idk
-
-
 def loadCriticalParams(path):
     """idk"""
     # Read all required columns
@@ -17,7 +18,6 @@ def loadCriticalParams(path):
         nrows=6, 
         header=None
     )
-    
     # Combine parameters
     parameters = pd.concat([df[0], df[5]], ignore_index=True)
     values = pd.concat([df[3], df[7]], ignore_index=True)
@@ -169,6 +169,6 @@ def rpo(exelFile):
 
     return supplier, part, inspect, desc, stats, fact
 
-# print(rpo(exelFile='Data\dummy.xlsx'))
+# rpo(exelFile='Data\dummy.xlsx')
 # pandas_time = time.time() - start_time
 # print(pandas_time)
